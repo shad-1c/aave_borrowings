@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import sqlite3
 import time
 from pathlib import Path
 
@@ -69,7 +68,7 @@ def compute_price_changes(
 
 
 def run_analysis(
-    conn: sqlite3.Connection, config: Config,
+    conn, config: Config,
     days: int = 7, asset_filter: str | None = None,
 ):
     """Run price correlation analysis on large borrow events."""

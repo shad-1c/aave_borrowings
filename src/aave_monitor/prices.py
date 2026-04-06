@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import sqlite3
 import time
 
 import requests
@@ -43,7 +42,7 @@ SYMBOL_TO_COINGECKO = {
 
 
 class PriceFetcher:
-    def __init__(self, config: CoinGeckoConfig, conn: sqlite3.Connection):
+    def __init__(self, config: CoinGeckoConfig, conn):
         self.config = config
         self.conn = conn
         self.session = requests.Session()

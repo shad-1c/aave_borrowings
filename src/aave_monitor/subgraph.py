@@ -218,6 +218,8 @@ class SubgraphClient:
                 )
                 all_borrows.append(event)
 
+            logger.info(f"  ... fetched page: {len(borrows)} borrows, total so far: {len(all_borrows)}")
+
             if len(borrows) < self.config.page_size:
                 break
 

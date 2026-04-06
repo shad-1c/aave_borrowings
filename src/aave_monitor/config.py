@@ -51,7 +51,7 @@ class Config:
     thresholds_overrides: dict[str, ThresholdConfig] = field(default_factory=dict)
     alerts: AlertsConfig = field(default_factory=AlertsConfig)
     coingecko: CoinGeckoConfig = field(default_factory=CoinGeckoConfig)
-    db_path: str = "data/aave_monitor.db"
+    db_url: str = "postgresql://localhost/aave_monitor"
 
     def get_threshold(self, asset_symbol: str) -> ThresholdConfig:
         return self.thresholds_overrides.get(asset_symbol, self.thresholds_default)
@@ -112,5 +112,5 @@ def load_config(config_path: str = "config.yaml") -> Config:
         thresholds_overrides=thresholds_overrides,
         alerts=alerts,
         coingecko=coingecko,
-        db_path=raw.get("db_path", "data/aave_monitor.db"),
+        db_url=os.getenv("DATABASE_URL") or raw.get("db_url", "postgresql://localhost/aave_monitor"),
     )
