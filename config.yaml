@@ -1,0 +1,35 @@
+polling_interval_seconds: 30
+
+subgraph:
+  subgraph_id: "Cd2gEDVeqnjBn1hSeqFMitw8Q1iiyV9FYUZkLNRcL87g"
+  page_size: 100
+
+thresholds:
+  default:
+    usd_absolute: 1000000       # $1M
+    liquidity_pct: 5.0          # 5% of available liquidity
+  overrides:
+    WETH:
+      usd_absolute: 500000
+      liquidity_pct: 3.0
+    USDC:
+      usd_absolute: 5000000
+      liquidity_pct: 10.0
+    USDT:
+      usd_absolute: 5000000
+      liquidity_pct: 10.0
+    WBTC:
+      usd_absolute: 500000
+      liquidity_pct: 3.0
+
+alerts:
+  console: true
+  webhook_url: null
+  telegram_bot_token: null
+  telegram_chat_id: null
+
+coingecko:
+  base_url: "https://api.coingecko.com/api/v3"
+  rate_limit_per_minute: 10
+
+db_path: "data/aave_monitor.db"
