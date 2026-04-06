@@ -2,7 +2,7 @@ polling_interval_seconds: 30
 
 subgraph:
   subgraph_id: "Cd2gEDVeqnjBn1hSeqFMitw8Q1iiyV9FYUZkLNRcL87g"
-  page_size: 100
+  page_size: 1000
 
 thresholds:
   default:
@@ -32,4 +32,4 @@ coingecko:
   base_url: "https://api.coingecko.com/api/v3"
   rate_limit_per_minute: 10
 
-db_path: "data/aave_monitor.db"
+db_url: "postgresql://localhost/aave_monitor"

@@ -84,7 +84,7 @@ def monitor(config_path: str = "config.yaml"):
         )
         sys.exit(1)
 
-    conn = init_database(config.db_path)
+    conn = init_database(config.db_url)
     client = SubgraphClient(config.subgraph, coingecko_api_key=config.coingecko.api_key)
 
     signal.signal(signal.SIGINT, _handle_signal)
@@ -95,13 +95,17 @@ def monitor(config_path: str = "config.yaml"):
     console.print(f"  Default threshold: ${config.thresholds_default.usd_absolute:,.0f} / {config.thresholds_default.liquidity_pct}%")
     console.print()
 
+    is_backfill = get_last_processed_timestamp(conn) == 0
+
     while _running:
         try:
             last_ts = get_last_processed_timestamp(conn)
             if last_ts == 0:
-                # First run: start from 24 hours ago instead of all history
-                last_ts = int(time.time()) - 86400
-                console.print("[dim]First run — fetching last 24 hours of borrows[/dim]")
+                # First run: start from the beginning of the current year
+                import datetime
+                jan1 = datetime.datetime(datetime.datetime.now().year, 1, 1, tzinfo=datetime.timezone.utc)
+                last_ts = int(jan1.timestamp())
+                console.print(f"[dim]First run — fetching borrows since Jan 1, {jan1.year}[/dim]")
             borrows = client.fetch_recent_borrows(since_timestamp=last_ts)
             reserves = client.fetch_reserve_state()
 
@@ -119,11 +123,22 @@ def monitor(config_path: str = "config.yaml"):
                     alert.threshold_value_absolute,
                     alert.threshold_value_relative,
                 )
-                send_alert(alert, config.alerts)
+                if is_backfill:
+                    # During backfill, only log to console — skip Telegram/webhook
+                    from .alerts import _console_alert
+                    if config.alerts.console:
+                        _console_alert(alert)
+                else:
+                    send_alert(alert, config.alerts)
 
             _print_cycle_summary(len(borrows), len(alerts), len(reserves))
             if borrows:
                 _print_recent_borrows(borrows)
+
+            if is_backfill:
+                is_backfill = False
+                console.print(f"[bold green]Backfill complete — {len(alerts)} historical large borrows recorded[/bold green]")
+                console.print("[bold green]Telegram notifications now active for new borrows[/bold green]")
 
         except Exception as e:
             logger.error(f"Error in monitoring cycle: {e}", exc_info=True)
@@ -151,7 +166,7 @@ def analyze_cmd():
     from .analysis import run_analysis
 
     config = load_config(args.config)
-    conn = init_database(config.db_path)
+    conn = init_database(config.db_url)
     run_analysis(conn, config, days=args.days, asset_filter=args.asset)
     conn.close()
 
